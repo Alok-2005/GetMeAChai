@@ -18,7 +18,7 @@ const page = () => {
   
    <div className='text-white container mx-auto py-10 flex '>
   
-      <SignUpPage />
+      {/* <SignUpPage />
   
   <motion.idv className='inline my-auto'
    initial={{opacity:0,y:20}}
@@ -26,16 +26,16 @@ const page = () => {
    transition={{duration:0.5}}
   >
   <div className='h-[200px] w-[1px] bg-gray-400 mr-48 '></div>
-  <h2 className='-ml-3' >OR</h2>  
-  <div className='h-[200px] w-[1px] bg-gray-400 mr-48'></div>
-  </motion.idv>
+  <h2 className='-ml-3' >OR</h2>   */}
+  {/* <div className='h-[200px] w-[1px] bg-gray-400 mr-48'></div>
+  </motion.idv> */}
   
   
       <motion.div
       initial={{opacity:0,y:20}}
       animate={{opacity:1,y:0}}
       transition={{duration:0.5}}
-      className=' rounded-2xl shadow-xl overflow-hidden ml-20 my-auto'
+      className=' rounded-2xl shadow-xl overflow-hidden  my-auto mx-auto'
       >
       <div class="max-w-72 mx-auto pt-10 grid gap-3">
   
