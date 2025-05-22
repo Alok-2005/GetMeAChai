@@ -132,6 +132,7 @@ const PaymentPage = ({ username }) => {
             <h2 className="text-lg font-bold my-5">Supporters</h2>
             <ul className="mx-5 text-lg">
               {payments.length === 0 && <li>No Payments yet</li>}
+              }
               {payments.map((p, i) => (
                 <li key={i} className="flex gap-2 items-center my-4">
                   <Image
