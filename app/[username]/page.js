@@ -8,7 +8,11 @@ export const dynamic = 'force-dynamic'
 
 const Username = async ({ params }) => {
   try {
-    await connectDb();
+    const connected = await connectDb();
+    if (!connected) {
+      throw new Error('Failed to connect to database');
+    }
+
     const user = await User.findOne({ username: params.username });
     
     if (!user) {
@@ -20,7 +24,7 @@ const Username = async ({ params }) => {
     );
   } catch (error) {
     console.error('Error:', error);
-    return notFound();
+    throw error; // Let Next.js error boundary handle this
   }
 }
 
