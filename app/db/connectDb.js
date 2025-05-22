@@ -1,13 +1,26 @@
 import mongoose from "mongoose";
+
 const connectDb = async () => {
-    try {
-      const conn = await mongoose.connect(`mongodb+srv://alokchaturvedi190:tSfG3cshendvz6os@cluster0.ww8zb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`, {
-        useNewUrlParser: true,
-      });
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-      console.error(error.message);
-      process.exit(1);
+  try {
+    if (mongoose.connections[0].readyState) {
+      return true;
     }
+    
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return true;
+  } catch (error) {
+    console.error("MongoDB connection error:", error.message);
+    return false;
   }
-  export default connectDb
+};
+
+export default connectDb
