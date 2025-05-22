@@ -20,11 +20,13 @@ const Username = async ({ params }) => {
     }
 
     return (
-      <PaymentPage username={params.username} />
+      <div className="container mx-auto">
+        <PaymentPage username={params.username} />
+      </div>
     );
   } catch (error) {
     console.error('Error:', error);
-    throw error; // Let Next.js error boundary handle this
+    throw error;
   }
 }
 

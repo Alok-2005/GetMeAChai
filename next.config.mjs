@@ -3,9 +3,13 @@ const nextConfig = {
   images: {
     domains: [
       'static.vecteezy.com',
-      'example.com' // Replace with your actual image domains
+      'example.com',
+      'images.pexels.com'
     ],
   },
+  experimental: {
+    serverActions: true
+  }
 };
 
 export default nextConfig;

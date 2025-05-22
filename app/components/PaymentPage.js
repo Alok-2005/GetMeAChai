@@ -22,10 +22,15 @@ const PaymentPage = ({ username }) => {
   const router = useRouter();
 
   const getData = useCallback(async () => {
-    let u = await fetchuser(username);
-    setcurrentUser(u);
-    let dbPayments = await fetchpayments(username);
-    setPayments(dbPayments);
+    try {
+      let u = await fetchuser(username);
+      setcurrentUser(u);
+      let dbPayments = await fetchpayments(username);
+      setPayments(dbPayments);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load user data");
+    }
   }, [username]);
 
   useEffect(() => {
