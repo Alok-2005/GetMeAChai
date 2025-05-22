@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
+
 const connectDb = async () => {
-    try {
-      const conn = await mongoose.connect(`mongodb+srv://alokchaturvedi190:tSfG3cshendvz6os@cluster0.ww8zb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`, {
-        useNewUrlParser: true,
-      });
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-      console.error(error.message);
-      process.exit(1);
+  try {
+    if (mongoose.connections[0].readyState) {
+      return;
     }
+    
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log(`MongoDB Connected: ${mongoose.connection.host}`);
+  } catch (error) {
+    console.error("MongoDB connection error:", error.message);
+    process.exit(1);
   }
-  export default connectDb
+};
+
+export default connectDb;
