@@ -22,3 +22,5 @@ const connectDb = async () => {
     return false;
   }
 };
+
+export default connectDb
