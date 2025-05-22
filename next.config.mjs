@@ -1,15 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    domains: [
-      'static.vecteezy.com',
-      'example.com',
-      'images.pexels.com'
-    ],
-  },
-  experimental: {
-    serverActions: true
-  }
-};
+const nextConfig = {};
 
 export default nextConfig;

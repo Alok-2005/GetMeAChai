@@ -354,7 +354,7 @@ export default function Home() {
     {/* </div> */}
 
 
-        <Routes>
+        {/* <Routes>
           <Route
             path="/dashboard"
             element={
@@ -392,7 +392,7 @@ export default function Home() {
 <page5/>
             </RedirectAuthenticatedUser>
             } />
-        </Routes>
+        </Routes> */}
       </div>
     </>
   );
