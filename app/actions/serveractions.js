@@ -45,27 +45,30 @@ export const fetchpayments = async (username) => {
     return p
 }
 
+// app/actions/serveractions.js
 export const updateProfile = async (data, oldusername) => {
-    await connectDb()
-    let ndata = Object.fromEntries(data)
+  await connectDb();
+  const ndata = Object.fromEntries(data);
 
-    // If the username is being updated, check if username is available
+  try {
+    // If the username is being updated, check if the new username is available
     if (oldusername !== ndata.username) {
-        let u = await User.findOne({ username: ndata.username })
-        if (u) {
-            return { error: "Username already exists" }
-        }   
-        await User.updateOne({email: ndata.email}, ndata)
-        // Now update all the usernames in the Payments table 
-        await Payment.updateMany({to_user: oldusername}, {to_user: ndata.username})
-        
+      const existingUser = await User.findOne({ username: ndata.username });
+      if (existingUser) {
+        return { error: "Username already exists" };
+      }
+      // Update user with the new username
+      await User.updateOne({ email: ndata.email }, ndata);
+      // Update all payments with the new username
+      await Payment.updateMany({ to_user: oldusername }, { to_user: ndata.username });
+    } else {
+      // If username is unchanged, update other fields
+      await User.updateOne({ email: ndata.email }, ndata);
     }
-    else{
-
-        
-        await User.updateOne({email: ndata.email}, ndata)
-    }
-
-
-}
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return { error: "Failed to update profile" };
+  }
+};
 
