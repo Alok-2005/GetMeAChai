@@ -19,25 +19,9 @@ import { Coffee, Users, Wallet, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { useEffect } from "react";
 import Link from "next/link";
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!user.isVerified) {
-    return <Navigate to="/verify-email" replace />;
-  }
-  return children;
-};
 
 // redirect authenticated user to home page
-const RedirectAuthenticatedUser = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
-  if (isAuthenticated && user.isVerified) {
-    return <Navigate to="/dashboard2" replace />;
-  }
-  return children;
-};
+
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -139,15 +123,15 @@ const featureItems = [
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  // const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
+  // useEffect(() => {
+  //   checkAuth();
+  // }, [checkAuth]);
 
-  if (isCheckingAuth) return <LoadingSpinner />;
+  // if (isCheckingAuth) return <LoadingSpinner />;
 
-  console.log("isAuthenicated", isAuthenticated);
-  console.log("user", user);
+  // console.log("isAuthenicated", isAuthenticated);
+  // console.log("user", user);
 
   
   return (
