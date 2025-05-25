@@ -20,29 +20,29 @@ export const authOptions = {
         try {
           // Connect to MongoDB for Mongoose operations
           await mongoose.connect(process.env.MONGODB_URI);
-          
-          // Check if user exists in Mongoose User model
+
+          // Check if user exists in Mongoose User model by email
           let dbUser = await User.findOne({ email: user.email });
-          
+
           if (!dbUser) {
-            // Create user in Mongoose User model
+            // Create user in Mongoose User model if not found
             dbUser = await User.create({
               email: user.email,
-              username: user.email.split("@")[0],
+              username: profile.login || user.email.split("@")[0], // Use GitHub username if available
               name: profile.name || user.name,
             });
           } else {
-            // Update username if it doesn't exist
+            // Update username if missing
             if (!dbUser.username) {
               await User.updateOne(
                 { email: user.email },
-                { username: user.email.split("@")[0] }
+                { username: profile.login || user.email.split("@")[0] }
               );
             }
           }
-          
-          // Store username in user object for session callback
-          user.username = dbUser.username;
+
+          // Update the user object for the session callback
+          user.username = dbUser.username || user.email.split("@")[0];
           return true;
         } catch (error) {
           console.error("Sign-in error:", error);
@@ -52,7 +52,6 @@ export const authOptions = {
       return true;
     },
     async session({ session, user }) {
-      // Add username from adapter's user document
       session.user.name = user.username || user.email.split("@")[0];
       session.user.id = user.id;
       return session;
@@ -60,6 +59,7 @@ export const authOptions = {
   },
   pages: {
     signIn: "/login",
+    error: "/auth/error",
   },
 };
 
