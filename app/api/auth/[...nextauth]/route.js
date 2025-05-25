@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "@/app/db/connectDb";
+import mongoose from "mongoose";
+import User from "@/app/models/User";
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -16,27 +18,50 @@ export const authOptions = {
     async signIn({ user, account, profile }) {
       if (account.provider === "github") {
         try {
-          // MongoDBAdapter handles user creation/update
-          return true; // Allow sign-in
+          // Connect to MongoDB for Mongoose operations
+          await mongoose.connect(process.env.MONGODB_URI);
+          
+          // Check if user exists in Mongoose User model
+          let dbUser = await User.findOne({ email: user.email });
+          
+          if (!dbUser) {
+            // Create user in Mongoose User model
+            dbUser = await User.create({
+              email: user.email,
+              username: user.email.split("@")[0],
+              name: profile.name || user.name,
+            });
+          } else {
+            // Update username if it doesn't exist
+            if (!dbUser.username) {
+              await User.updateOne(
+                { email: user.email },
+                { username: user.email.split("@")[0] }
+              );
+            }
+          }
+          
+          // Store username in user object for session callback
+          user.username = dbUser.username;
+          return true;
         } catch (error) {
           console.error("Sign-in error:", error);
-          return false; // Reject sign-in on error
+          return false;
         }
       }
-      return true; // Allow other providers (if added later)
+      return true;
     },
     async session({ session, user }) {
-      // Add username from MongoDB user document to session
+      // Add username from adapter's user document
       session.user.name = user.username || user.email.split("@")[0];
-      session.user.id = user.id; // Add user ID for app usage
+      session.user.id = user.id;
       return session;
     },
   },
   pages: {
-    signIn: "/login", // Redirect to custom login page
+    signIn: "/login",
   },
 };
 
-// Export handler for GET and POST
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
