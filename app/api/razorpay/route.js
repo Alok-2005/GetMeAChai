@@ -12,14 +12,12 @@ export const POST = async (req) => {
 
     console.log("Razorpay Callback Body:", JSON.stringify(body, null, 2));
 
-    // Check if razorpayOrderId is present
     let payment = await Payment.findOne({ oid: body.razorpay_order_id });
     if (!payment) {
         console.error("Order ID not found:", body.razorpay_order_id);
         return NextResponse.json({ success: false, message: "Order Id not found" });
     }
 
-    // Fetch the user who is receiving the payment
     let user = await User.findOne({ username: payment.to_user });
     if (!user) {
         console.error("User not found for username:", payment.to_user);
@@ -27,7 +25,6 @@ export const POST = async (req) => {
     }
     const secret = user.razorpaysecret;
 
-    // Verify the payment
     let isValid = validatePaymentVerification(
         { order_id: body.razorpay_order_id, payment_id: body.razorpay_payment_id },
         body.razorpay_signature,
@@ -37,29 +34,26 @@ export const POST = async (req) => {
     console.log("Payment Verification Result:", isValid);
 
     if (isValid) {
-        // Initialize Razorpay instance
         const razorpay = new Razorpay({
             key_id: user.razorpayid,
             key_secret: user.razorpaysecret,
         });
 
         try {
-            // Fetch payment details
             const paymentDetails = await razorpay.payments.fetch(body.razorpay_payment_id);
             console.log("Payment Details:", JSON.stringify(paymentDetails, null, 2));
 
-            // Check payment method and extract UPI ID
             const isUpi = paymentDetails.method === "upi";
             const upiId = isUpi ? paymentDetails.vpa || "N/A" : "N/A";
-            const transactionId = paymentDetails.id || "N/A";
 
-            // Update payment with UPI ID and transaction ID
             const updatedPayment = await Payment.findOneAndUpdate(
                 { oid: body.razorpay_order_id },
                 {
                     done: true,
                     upiId: upiId,
-                    transactionId: transactionId,
+                    // Keep existing transactionId, optionally append Razorpay payment_id
+                    transactionId: payment.transactionId,
+                    razorpayPaymentId: body.razorpay_payment_id, // Store Razorpay payment_id separately
                     updatedAt: Date.now(),
                 },
                 { new: true }

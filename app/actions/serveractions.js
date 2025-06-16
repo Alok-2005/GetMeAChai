@@ -1,10 +1,10 @@
-"use server"
+"use server";
 
-import Razorpay from "razorpay"
-import Payment from "../models/Payment"
-import connectDb from "../db/connectDb"
-import User from "../models/User"
-
+import Razorpay from "razorpay";
+import { v4 as uuidv4 } from "uuid"; // Import UUID library
+import Payment from "../models/Payment";
+import connectDb from "../db/connectDb";
+import User from "../models/User";
 
 export const initiate = async (amount, to_username, paymentform) => {
     await connectDb();
@@ -23,7 +23,10 @@ export const initiate = async (amount, to_username, paymentform) => {
 
     let x = await instance.orders.create(options);
 
-    // Create a payment object with default fields
+    // Generate a unique transaction ID
+    const transactionId = uuidv4();
+
+    // Create a payment object with unique transactionId
     await Payment.create({
         oid: x.id,
         amount: amount / 100,
@@ -31,48 +34,40 @@ export const initiate = async (amount, to_username, paymentform) => {
         name: paymentform.name,
         message: paymentform.message,
         upiId: "N/A",
-        transactionId: "N/A",
+        transactionId: transactionId, // Unique ID
     });
 
     return x;
 };
 
-
 export const fetchuser = async (username) => {
-    await connectDb()
-    let u = await User.findOne({ username: username })
-    let user = u.toObject({ flattenObjectIds: true })
-    return user
-}
+    await connectDb();
+    let u = await User.findOne({ username: username });
+    let user = u.toObject({ flattenObjectIds: true });
+    return user;
+};
 
 export const fetchpayments = async (username) => {
-    await connectDb()
-    // find all payments sorted by decreasing order of amount and flatten object ids
-    let p = await Payment.find({ to_user: username, done:true }).sort({ amount: -1 }).limit(10).lean()
-    return p
-}
+    await connectDb();
+    let p = await Payment.find({ to_user: username, done: true })
+        .sort({ updatedAt: -1 }) // Sort by updatedAt to get latest payment
+        .limit(10)
+        .lean();
+    return p;
+};
 
 export const updateProfile = async (data, oldusername) => {
-    await connectDb()
-    let ndata = Object.fromEntries(data)
+    await connectDb();
+    let ndata = Object.fromEntries(data);
 
-    // If the username is being updated, check if username is available
     if (oldusername !== ndata.username) {
-        let u = await User.findOne({ username: ndata.username })
+        let u = await User.findOne({ username: ndata.username });
         if (u) {
-            return { error: "Username already exists" }
-        }   
-        await User.updateOne({email: ndata.email}, ndata)
-        // Now update all the usernames in the Payments table 
-        await Payment.updateMany({to_user: oldusername}, {to_user: ndata.username})
-        
+            return { error: "Username already exists" };
+        }
+        await User.updateOne({ email: ndata.email }, ndata);
+        await Payment.updateMany({ to_user: oldusername }, { to_user: ndata.username });
+    } else {
+        await User.updateOne({ email: ndata.email }, ndata);
     }
-    else{
-
-        
-        await User.updateOne({email: ndata.email}, ndata)
-    }
-
-
-}
-
+};
