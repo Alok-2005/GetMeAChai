@@ -30,7 +30,7 @@ const PaymentPage = ({ username }) => {
                 theme: "light",
                 transition: Bounce,
             });
-            getData();
+            setTimeout(getData, 1000);
         }
     }, [searchParams]);
 
@@ -46,7 +46,7 @@ const PaymentPage = ({ username }) => {
             console.log("Payments Fetched:", JSON.stringify(dbpayments, null, 2));
             setPayments(dbpayments);
         } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error("Error fetching data:", error.message, error.stack);
             toast.error("Failed to fetch data");
         }
     };
@@ -80,7 +80,7 @@ const PaymentPage = ({ username }) => {
             var rzp1 = new window.Razorpay(options);
             rzp1.open();
         } catch (error) {
-            console.error("Error initiating payment:", error);
+            console.error("Error initiating payment:", error.message, error.stack);
             toast.error("Failed to initiate payment");
         }
     };
@@ -90,6 +90,14 @@ const PaymentPage = ({ username }) => {
         .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
 
     console.log("Latest Payment:", JSON.stringify(latestPayment, null, 2));
+
+    // Create WhatsApp share link
+    const generateWhatsAppLink = (payment) => {
+        if (!payment) return "#";
+        const message = `Payment Details:\nName: ${payment.name || "Unknown"}\nAmount: ₹${payment.amount || 0}\nMessage: ${payment.message || "No message"}\nUPI ID: ${payment.upiId || "Not available"}\nTransaction ID: ${payment.transactionId || "Not available"}\nRazorpay Payment ID: ${payment.razorpayPaymentId || "Not available"}\nUpdated At: ${payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : "N/A"}`;
+        const encodedMessage = encodeURIComponent(message);
+        return `https://wa.me/${process.env.NEXT_PUBLIC_TWILIO_WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    };
 
     return (
         <>
@@ -141,6 +149,15 @@ const PaymentPage = ({ username }) => {
                                 <p><strong>UPI ID:</strong> {latestPayment.upiId || "Not available"}</p>
                                 <p><strong>Transaction ID:</strong> {latestPayment.transactionId || "Not available"}</p>
                                 <p><strong>Razorpay Payment ID:</strong> {latestPayment.razorpayPaymentId || "Not available"}</p>
+                                <p><strong>Updated At:</strong> {latestPayment.updatedAt ? new Date(latestPayment.updatedAt).toLocaleString() : "N/A"}</p>
+                                <a
+                                    href={generateWhatsAppLink(latestPayment)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-2 inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                                >
+                                    Share via WhatsApp
+                                </a>
                             </>
                         ) : (
                             <p>No recent payment found. Please try again.</p>
